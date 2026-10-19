@@ -70,3 +70,17 @@ Gunakan komponen yang sudah ada sebelum membuat yang baru:
    - Status kosong: Menampilkan teks konfirmasi wajib "Belum ada produk" disertai ikon representatif dan penjelasan ramah.
    - Status error: Menguraikan kendala teknis dengan bahasa yang profesional dan memberikan opsi solusi (muat ulang atau hubungi kontak toko).
 
+## Keputusan Arsitektur Halaman Detail Produk (US-02)
+
+1. **Pengambilan Data Server-side Terisolasi**:
+   - Query satu produk menggunakan `maybeSingle()` berdasarkan parameter URL (`params.id`) di sisi server menggunakan `createServerClient()`.
+   - Mengikuti kaidah Next.js 16 di mana `params` di-resolve secara asinkron (`const { id } = await params`).
+
+2. **Penanganan Status "Tidak Ditemukan"**:
+   - Jika ID produk tidak valid atau tidak ada di database Supabase, fungsi standar `notFound()` dipanggil di luar blok penanganan exception untuk merender halaman `app/not-found.jsx`.
+
+3. **Integritas Komponen & Fungsionalitas**:
+   - Tata letak asli halaman detail produk (gambar rasio 1:1, label kategori, nama produk, harga format rupiah, deskripsi, dan tombol WhatsApp) tetap dipertahankan secara utuh tanpa modifikasi destruktif.
+   - Komponen `CatatanBelumAktif` dihapus bersih dari halaman.
+
+
