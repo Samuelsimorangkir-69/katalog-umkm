@@ -165,6 +165,27 @@ Gunakan komponen yang sudah ada sebelum membuat yang baru:
    - Menghitung subtotal estimasi biaya secara otomatis dan *real-time*.
    - Mengintegrasikan seluruh pilihan pelanggan (nama produk, varian, jumlah, dan estimasi total) ke dalam draf pesan WhatsApp yang ter-encode aman via `encodeURIComponent()`.
 
+## Keputusan Arsitektur Optimalisasi Sistem & AI (US-13 & US-14)
+
+1. **Progressive Web App (PWA) Terisolasi (US-13)**:
+   - Menambahkan berkas `public/manifest.json` yang mendefinisikan identitas toko, tema warna (#1a365d), dan ikon maskable (192px & 512px) dari `public/icons`.
+   - Mengimplementasikan `public/sw.js` (Service Worker) dengan strategi caching aset statis dan fallback luring, mengabaikan rute `/admin` dan `/api` demi menjaga keamanan data real-time.
+   - Pendaftaran Service Worker dilakukan secara aman melalui client component `PWARegister` di `app/layout.jsx` tanpa mengganggu proses hidrasi HTML server.
+
+2. **Pembuatan Deskripsi Produk dengan AI (US-14)**:
+   - Dibuat terisolasi di `app/admin/ai-actions.js` (`generateDeskripsiAI`) tanpa menyentuh logika mutasi CRUD yang telah stabil.
+   - Terkunci otentikasi admin sisi server (`getAdminUser()`).
+   - Mendukung integrasi resmi Google Gemini REST API melalui `process.env.GEMINI_API_KEY`, dilengkapi mesin copywriting UMKM cerdas sebagai fallback tangguh saat kunci API belum disetel.
+   - Injeksi tombol pada `FormProduk` bersifat non-destruktif, mengisi textarea `deskripsi` secara reaktif dan tetap dapat disunting manual oleh pemilik toko.
+
+## Audit Akhir & Rekap Kepatuhan Proyek
+- **US-01 s.d US-06 (Fondasi & Keamanan)**: Akses Supabase murni sisi server, otentikasi berbasis cookie `@supabase/ssr`, proteksi rute `proxy.js` Next.js 16, dan perlindungan ganti password.
+- **US-07 s.d US-10 (Manajemen Produk Admin)**: CRUD lengkap produk di `/admin`, form terisolasi, dan modal popup konfirmasi hapus berbasis tema Navy & Gold.
+- **US-11 & US-12 (Interaksi Pengguna)**: Pencarian dan filter kategori real-time, selector kuantitas dan varian terintegrasi otomatis ke format tautan WhatsApp.
+- **US-13 & US-14 (PWA & AI)**: Dukungan instalasi aplikasi seluler PWA dan asisten generator deskripsi AI.
+- **Desain & Kode**: Standarisasi OKLCH, tipografi dinamis `clamp()`, tidak ada library luar berlebih, dan zero AI slop.
+
+
 
 
 

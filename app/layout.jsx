@@ -1,11 +1,20 @@
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import PWARegister from "@/components/PWARegister";
 import { toko } from "@/lib/toko";
 
 export const metadata = {
   title: toko.nama,
   description: toko.tagline,
+  manifest: "/manifest.json",
+  icons: {
+    apple: "/icons/icon-192.png",
+  },
+};
+
+export const viewport = {
+  themeColor: "#1a365d",
 };
 
 export default function RootLayout({ children }) {
@@ -23,6 +32,7 @@ export default function RootLayout({ children }) {
         className="flex min-h-screen flex-col font-sans antialiased"
         suppressHydrationWarning
       >
+        <PWARegister />
         <Header />
         <main className="mx-auto w-full max-w-5xl flex-1 px-4">{children}</main>
         <Footer />
