@@ -133,7 +133,39 @@ Gunakan komponen yang sudah ada sebelum membuat yang baru:
 2. **Guard Sisi Server pada Setiap Server Action yang Mengubah Data**:
    - Fungsi helper `requireAdmin()` di `app/admin/actions.js` memverifikasi sesi admin aktif (`supabase.auth.getUser()`) sebelum setiap operasi mutasi.
    - `gantiPassword()` memanfaatkan helper ini sebagai lapisan pertahanan kedua selain proxy, sesuai aturan keamanan AGENTS.md nomor 3 dan 4.
-   - Server Action yang akan dibuat di masa depan (tambah, ubah, hapus produk) wajib melalui `requireAdmin()` yang sama.
+   - Server Action yang dibuat (tambah, ubah, hapus produk) melalui `requireAdmin()` yang sama.
+
+## Keputusan Arsitektur Manajemen Produk Admin (US-07, US-08, US-09, US-10)
+
+1. **Daftar Produk Dinamis Sisi Server (US-07)**:
+   - Data produk pada `/admin` dibaca langsung dari database Supabase (`createServerClient`) dengan urutan `id ASC`.
+   - Menggunakan `TabelProduk` dengan visual bersih, thumbnail rasio 1:1, status kategori, dan format harga Rupiah.
+
+2. **Formulir Tambah & Ubah Produk (US-08 & US-09)**:
+   - Mengintegrasikan `FormProduk` dengan Server Action `tambahProduk` dan `ubahProduk`.
+   - Menjaga integritas data melalui validasi sisi server (nama wajib, harga nominal tidak negatif).
+   - Menyediakan umpan balik interaktif dengan status *pending* ("Menyimpan...") dan peringatan error berbasis tema.
+   - Setelah operasi berhasil, cache rute di-revalidasi (`revalidatePath`) dan pengguna diarahkan kembali ke `/admin`.
+
+3. **Dialog Konfirmasi Hapus Produk (US-10)**:
+   - Tombol hapus memicu modal popup konfirmasi (`role="dialog"` dan `aria-modal="true"`) dengan latar *backdrop blur*.
+   - Menggunakan skema aksen Navy & Gold serta crimson red warning (`bg-bahaya/10 text-bahaya`).
+   - Eksekusi penghapusan terlindungi oleh `requireAdmin()` di sisi server, memastikan aksi hanya dapat dijalankan oleh admin yang memiliki sesi sah.
+
+## Keputusan Arsitektur Fitur Interaksi Pengguna (US-11 & US-12)
+
+1. **Penyaringan & Pencarian Real-Time (US-11)**:
+   - Data produk utama tetap dimuat secara *server-side* pada Server Component (`app/page.jsx`).
+   - Logika pencarian instan dan penyaringan kategori ditangani oleh client component `KatalogInteraktif` tanpa melakukan round-trip HTTP ulang ke database.
+   - Kategori diekstraksi secara otomatis dan dinamis dari produk yang tersedia di database.
+   - Dilengkapi status kosong (*empty search state*) ramah pengguna dengan tombol reset cepat.
+
+2. **Kuantitas & Pilihan Varian Pesanan WhatsApp (US-12)**:
+   - Komponen `TombolWhatsApp` diperkaya dengan pemilih varian kontekstual dan *stepper* kuantitas belanja (angka minimal 1).
+   - Menghitung subtotal estimasi biaya secara otomatis dan *real-time*.
+   - Mengintegrasikan seluruh pilihan pelanggan (nama produk, varian, jumlah, dan estimasi total) ke dalam draf pesan WhatsApp yang ter-encode aman via `encodeURIComponent()`.
+
+
 
 
 

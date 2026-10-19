@@ -86,7 +86,7 @@ export async function logout() {
 }
 
 /**
- * Server Action untuk mengganti kata sandi admin yang sedang login.
+ * Server Action untuk mengganti kata sandi admin yang sedang login (US-05).
  * Memeriksa status login di server sebelum mengeksekusi perubahan.
  */
 export async function gantiPassword(prevState, formData) {
@@ -144,5 +144,167 @@ export async function gantiPassword(prevState, formData) {
     return {
       error: "Terjadi gangguan saat memproses perubahan password. Silakan coba lagi.",
     };
+  }
+}
+
+/**
+ * Server Action untuk menambah produk baru ke database Supabase (US-08).
+ * Wajib terkunci login admin di sisi server.
+ */
+export async function tambahProduk(prevState, formData) {
+  const data =
+    formData instanceof FormData
+      ? formData
+      : prevState instanceof FormData
+      ? prevState
+      : null;
+
+  if (!data) {
+    return { error: "Data formulir tidak valid." };
+  }
+
+  try {
+    const { supabase } = await requireAdmin();
+
+    const nama = data.get("nama")?.toString().trim();
+    const hargaStr = data.get("harga")?.toString().trim();
+    const kategori = data.get("kategori")?.toString().trim() || null;
+    const foto_url = data.get("foto_url")?.toString().trim() || null;
+    const deskripsi = data.get("deskripsi")?.toString().trim() || null;
+
+    if (!nama) {
+      return { error: "Nama produk wajib diisi." };
+    }
+
+    const harga = parseInt(hargaStr, 10);
+    if (isNaN(harga) || harga < 0) {
+      return { error: "Harga produk harus berupa angka nominal yang valid (tidak negatif)." };
+    }
+
+    const { error } = await supabase.from("produk").insert({
+      nama,
+      harga,
+      kategori,
+      foto_url,
+      deskripsi,
+    });
+
+    if (error) {
+      console.error("Gagal menambah produk:", error.message);
+      return { error: "Gagal menyimpan produk ke database. Silakan periksa isian data." };
+    }
+  } catch (err) {
+    if (err.message === "UNAUTHORIZED") {
+      return { error: "Sesi login tidak valid atau telah berakhir. Silakan login kembali." };
+    }
+    console.error("Kesalahan tambah produk:", err.message);
+    return { error: "Terjadi gangguan sistem saat menambahkan produk." };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  redirect("/admin");
+}
+
+/**
+ * Server Action untuk memperbarui data produk yang ada di Supabase (US-09).
+ * Wajib terkunci login admin di sisi server.
+ */
+export async function ubahProduk(prevState, formData) {
+  const data =
+    formData instanceof FormData
+      ? formData
+      : prevState instanceof FormData
+      ? prevState
+      : null;
+
+  if (!data) {
+    return { error: "Data formulir tidak valid." };
+  }
+
+  let idProduk = null;
+
+  try {
+    const { supabase } = await requireAdmin();
+
+    idProduk = data.get("id");
+    if (!idProduk) {
+      return { error: "ID produk tidak valid atau tidak ditemukan." };
+    }
+
+    const nama = data.get("nama")?.toString().trim();
+    const hargaStr = data.get("harga")?.toString().trim();
+    const kategori = data.get("kategori")?.toString().trim() || null;
+    const foto_url = data.get("foto_url")?.toString().trim() || null;
+    const deskripsi = data.get("deskripsi")?.toString().trim() || null;
+
+    if (!nama) {
+      return { error: "Nama produk wajib diisi." };
+    }
+
+    const harga = parseInt(hargaStr, 10);
+    if (isNaN(harga) || harga < 0) {
+      return { error: "Harga produk harus berupa angka nominal yang valid (tidak negatif)." };
+    }
+
+    const { error } = await supabase
+      .from("produk")
+      .update({
+        nama,
+        harga,
+        kategori,
+        foto_url,
+        deskripsi,
+      })
+      .eq("id", idProduk);
+
+    if (error) {
+      console.error("Gagal mengubah produk:", error.message);
+      return { error: "Gagal menyimpan perubahan ke database. Silakan coba lagi." };
+    }
+  } catch (err) {
+    if (err.message === "UNAUTHORIZED") {
+      return { error: "Sesi login tidak valid atau telah berakhir. Silakan login kembali." };
+    }
+    console.error("Kesalahan ubah produk:", err.message);
+    return { error: "Terjadi gangguan sistem saat memperbarui produk." };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  if (idProduk) {
+    revalidatePath(`/produk/${idProduk}`);
+  }
+  redirect("/admin");
+}
+
+/**
+ * Server Action untuk menghapus produk dari database Supabase (US-10).
+ * Wajib terkunci login admin di sisi server.
+ */
+export async function hapusProduk(id) {
+  try {
+    const { supabase } = await requireAdmin();
+
+    if (!id) {
+      return { error: "ID produk tidak valid." };
+    }
+
+    const { error } = await supabase.from("produk").delete().eq("id", id);
+
+    if (error) {
+      console.error("Gagal menghapus produk:", error.message);
+      return { error: "Gagal menghapus produk dari database." };
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    return { success: true };
+  } catch (err) {
+    if (err.message === "UNAUTHORIZED") {
+      return { error: "Sesi login tidak valid atau telah berakhir. Silakan login kembali." };
+    }
+    console.error("Kesalahan hapus produk:", err.message);
+    return { error: "Terjadi gangguan sistem saat menghapus produk." };
   }
 }

@@ -1,4 +1,4 @@
-import KartuProduk from "@/components/KartuProduk";
+import KatalogInteraktif from "@/components/KatalogInteraktif";
 import { toko } from "@/lib/toko";
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -47,7 +47,7 @@ export default async function HalamanKatalog() {
         </div>
       </section>
 
-      {/* Katalog Produk */}
+      {/* Katalog Produk dengan Pencarian & Filter Real-Time (US-11) */}
       <section aria-labelledby="judul-produk" className="flex flex-col gap-6">
         <div className="flex items-center justify-between border-b border-garis pb-3">
           <h2 id="judul-produk" className="text-xl font-bold tracking-tight text-teks">
@@ -118,17 +118,8 @@ export default async function HalamanKatalog() {
             </p>
           </div>
         ) : (
-          /* Grid Produk */
-          <div className="grid grid-cols-2 gap-4 transition-all duration-300 ease-in-out md:grid-cols-3 md:gap-6">
-            {daftarProduk.map((produk) => (
-              <div
-                key={produk.id}
-                className="transition-transform duration-200 ease-out hover:-translate-y-1 hover:shadow-md rounded-2xl"
-              >
-                <KartuProduk produk={produk} />
-              </div>
-            ))}
-          </div>
+          /* Katalog Interaktif dengan Filter Real-Time */
+          <KatalogInteraktif daftarProduk={daftarProduk} />
         )}
       </section>
     </div>
