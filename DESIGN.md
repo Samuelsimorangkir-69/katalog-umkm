@@ -110,6 +110,19 @@ Gunakan komponen yang sudah ada sebelum membuat yang baru:
    - Tombol "Keluar" di `NavAdmin` membungkus Server Action `logout()` melalui elemen form semantik, membersihkan sesi auth Supabase dan cookie, kemudian mengalihkan pengguna kembali ke `/admin/login`.
    - Tata letak dan gaya tombol tetap konsisten dengan desain awal.
 
+## Keputusan Arsitektur Ganti Password (US-05)
+
+1. **Validasi Sisi Server yang Ketat**:
+   - Pengecekan sesi pengguna aktif wajib dilakukan di server sebelum mutasi sandi dijalankan (`supabase.auth.getUser()`).
+   - Panjang kata sandi baru dipastikan minimal 8 karakter di sisi server, serta dipastikan identik dengan nilai konfirmasi kata sandi.
+
+2. **Umpan Balik Status & Fungsionalitas**:
+   - Pembaruan kata sandi menggunakan `supabase.auth.updateUser({ password })`.
+   - Menggunakan `useActionState` untuk mengelola status penyerahan formulir (*pending state* "Menyimpan...").
+   - Pesan keberhasilan disajikan dengan aksen warna utama (`border-utama/30 bg-utama/10 text-utama`), sedangkan pesan kegagalan divalidasi dengan warna bahaya (`border-bahaya/30 bg-bahaya/10 text-bahaya`).
+   - Komponen `CatatanBelumAktif` dihapus bersih dari halaman, dan seluruh elemen visual form tetap dipertahankan.
+
+
 
 
 

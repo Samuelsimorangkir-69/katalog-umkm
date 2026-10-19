@@ -67,3 +67,68 @@ export async function logout() {
   redirect("/admin/login");
 }
 
+/**
+ * Server Action untuk mengganti kata sandi admin yang sedang login.
+ */
+export async function gantiPassword(prevState, formData) {
+  const data =
+    formData instanceof FormData
+      ? formData
+      : prevState instanceof FormData
+      ? prevState
+      : null;
+
+  if (!data) {
+    return { error: "Data formulir tidak valid." };
+  }
+
+  const passwordBaru = data.get("password_baru");
+  const konfirmasiPassword = data.get("konfirmasi_password");
+
+  if (!passwordBaru || !konfirmasiPassword) {
+    return { error: "Semua kolom kata sandi wajib diisi." };
+  }
+
+  if (String(passwordBaru).length < 8) {
+    return { error: "Password baru minimal 8 karakter." };
+  }
+
+  if (passwordBaru !== konfirmasiPassword) {
+    return { error: "Konfirmasi password harus sama dengan password baru." };
+  }
+
+  try {
+    const supabase = await createAdminClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return {
+        error: "Sesi login tidak valid atau telah berakhir. Silakan login kembali.",
+      };
+    }
+
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: String(passwordBaru),
+    });
+
+    if (updateError) {
+      console.error("Gagal memperbarui password:", updateError.message);
+      return {
+        error: "Gagal mengganti password. Silakan coba beberapa saat lagi.",
+      };
+    }
+
+    return {
+      success: true,
+      pesan: "Password berhasil diganti.",
+    };
+  } catch (err) {
+    console.error("Kesalahan saat memperbarui password:", err.message);
+    return {
+      error: "Terjadi gangguan saat memproses perubahan password. Silakan coba lagi.",
+    };
+  }
+}
