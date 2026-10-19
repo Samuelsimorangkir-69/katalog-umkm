@@ -94,5 +94,22 @@ Gunakan komponen yang sudah ada sebelum membuat yang baru:
    - Tombol diubah menjadi elemen tautan semantik `<a>` dengan atribut `target="_blank"` dan `rel="noopener noreferrer"` untuk membuka chat WhatsApp di tab baru tanpa membocorkan referer.
    - Gaya visual tombol mempertahankan token desain tema asli (`bg-utama`, teks putih, `hover:bg-utama-gelap`) yang responsif untuk perangkat seluler maupun desktop.
 
+## Keputusan Arsitektur Autentikasi Admin (US-04)
+
+1. **Autentikasi Server-side & Manajemen Sesi Cookie**:
+   - Autentikasi menggunakan pustaka `@supabase/ssr` (`createAdminClient()`) dengan `SUPABASE_PUBLISHABLE_KEY` dan manajemen cookie sesi.
+   - Mengikuti kaidah keamanan: browser tidak pernah mengakses kredensial atau client Supabase langsung.
+   - Seluruh mutasi sesi diproses melalui Next.js Server Actions di `app/admin/actions.js` (`login()` dan `logout()`).
+
+2. **Umpan Balik Login & Pengalaman Pengguna (UX)**:
+   - Formulir login terhubung dengan Server Action menggunakan `useActionState` untuk menyajikan status *pending* saat proses autentikasi berlangsung.
+   - Pesan kegagalan login disajikan secara jelas, terstruktur, dan menggunakan bahasa Indonesia yang humanis (`border-bahaya/30 bg-bahaya/10 text-bahaya`) tanpa membongkar detail kerentanan sistem.
+   - Setelah login berhasil, pengguna langsung diarahkan secara otomatis ke `/admin`.
+
+3. **Fungsi Logout Bersih**:
+   - Tombol "Keluar" di `NavAdmin` membungkus Server Action `logout()` melalui elemen form semantik, membersihkan sesi auth Supabase dan cookie, kemudian mengalihkan pengguna kembali ke `/admin/login`.
+   - Tata letak dan gaya tombol tetap konsisten dengan desain awal.
+
+
 
 
