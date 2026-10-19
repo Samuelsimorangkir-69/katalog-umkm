@@ -83,4 +83,16 @@ Gunakan komponen yang sudah ada sebelum membuat yang baru:
    - Tata letak asli halaman detail produk (gambar rasio 1:1, label kategori, nama produk, harga format rupiah, deskripsi, dan tombol WhatsApp) tetap dipertahankan secara utuh tanpa modifikasi destruktif.
    - Komponen `CatatanBelumAktif` dihapus bersih dari halaman.
 
+## Keputusan Arsitektur Pesan WhatsApp (US-03)
+
+1. **Format Pesan & Integrasi URL Aman**:
+   - Tautan menggunakan skema universal `https://wa.me/<nomor>?text=<pesan>`.
+   - Nomor WhatsApp dinormalisasi dari `lib/toko.js` (hanya digit numerik dalam format internasional).
+   - Teks pesan otomatis mencantumkan nama produk dan harga rupiah terformat (`formatRupiah()`), di-encode secara aman menggunakan `encodeURIComponent()` untuk mencegah karakter khusus merusak URL.
+
+2. **Aksesibilitas & Keamanan Navigasi**:
+   - Tombol diubah menjadi elemen tautan semantik `<a>` dengan atribut `target="_blank"` dan `rel="noopener noreferrer"` untuk membuka chat WhatsApp di tab baru tanpa membocorkan referer.
+   - Gaya visual tombol mempertahankan token desain tema asli (`bg-utama`, teks putih, `hover:bg-utama-gelap`) yang responsif untuk perangkat seluler maupun desktop.
+
+
 
