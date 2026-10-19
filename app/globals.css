@@ -1,25 +1,26 @@
 @import "tailwindcss";
 
 /*
-  Token desain. Ganti nilai di sini untuk menyesuaikan dengan usahamu.
-  Penjelasan setiap token ada di DESIGN.md.
+  Token desain. Diselaraskan dengan skema Navy & Gold profesional
+  dalam ruang warna modern OKLCH (oklch()).
+  Dokumentasi token dijelaskan di DESIGN.md.
 */
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
-  --color-latar: #ffffff;
-  --color-permukaan: #f1f5f2;
-  --color-garis: #dde5e0;
-  --color-teks: #1b2420;
-  --color-teks-lembut: #5b6a62;
+  --color-latar: oklch(1 0 0);
+  --color-permukaan: oklch(0.98 0.008 245);
+  --color-garis: oklch(0.92 0.012 245);
+  --color-teks: oklch(0.20 0.04 255);
+  --color-teks-lembut: oklch(0.50 0.035 250);
 
-  --color-utama: #1f6b4f;
-  --color-utama-gelap: #154d39;
+  --color-utama: oklch(0.32 0.09 255);
+  --color-utama-gelap: oklch(0.24 0.08 255);
 
-  --color-harga: #7a4e09;
-  --color-harga-latar: #fbefd8;
+  --color-harga: oklch(0.58 0.16 75);
+  --color-harga-latar: oklch(0.96 0.035 80);
 
-  --color-bahaya: #b42318;
+  --color-bahaya: oklch(0.55 0.22 27);
 }
 
 html {
