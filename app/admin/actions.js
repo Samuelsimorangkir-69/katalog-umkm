@@ -5,6 +5,24 @@ import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
+ * Helper: memastikan admin sudah login sebelum menjalankan aksi yang mengubah data.
+ * Mengembalikan objek { supabase, user } atau melempar error jika belum terotentikasi.
+ */
+async function requireAdmin() {
+  const supabase = await createAdminClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  return { supabase, user };
+}
+
+/**
  * Server Action untuk autentikasi login admin menggunakan Supabase Auth.
  */
 export async function login(prevState, formData) {
@@ -69,6 +87,7 @@ export async function logout() {
 
 /**
  * Server Action untuk mengganti kata sandi admin yang sedang login.
+ * Memeriksa status login di server sebelum mengeksekusi perubahan.
  */
 export async function gantiPassword(prevState, formData) {
   const data =
@@ -98,17 +117,7 @@ export async function gantiPassword(prevState, formData) {
   }
 
   try {
-    const supabase = await createAdminClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return {
-        error: "Sesi login tidak valid atau telah berakhir. Silakan login kembali.",
-      };
-    }
+    const { supabase } = await requireAdmin();
 
     const { error: updateError } = await supabase.auth.updateUser({
       password: String(passwordBaru),
@@ -126,6 +135,11 @@ export async function gantiPassword(prevState, formData) {
       pesan: "Password berhasil diganti.",
     };
   } catch (err) {
+    if (err.message === "UNAUTHORIZED") {
+      return {
+        error: "Sesi login tidak valid atau telah berakhir. Silakan login kembali.",
+      };
+    }
     console.error("Kesalahan saat memperbarui password:", err.message);
     return {
       error: "Terjadi gangguan saat memproses perubahan password. Silakan coba lagi.",

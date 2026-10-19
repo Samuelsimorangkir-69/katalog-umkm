@@ -122,7 +122,18 @@ Gunakan komponen yang sudah ada sebelum membuat yang baru:
    - Pesan keberhasilan disajikan dengan aksen warna utama (`border-utama/30 bg-utama/10 text-utama`), sedangkan pesan kegagalan divalidasi dengan warna bahaya (`border-bahaya/30 bg-bahaya/10 text-bahaya`).
    - Komponen `CatatanBelumAktif` dihapus bersih dari halaman, dan seluruh elemen visual form tetap dipertahankan.
 
+## Keputusan Arsitektur Proteksi Halaman Admin (US-06)
 
+1. **Route Guard via `proxy.js` (Next.js 16)**:
+   - Berkas `proxy.js` di root proyek (pengganti `middleware.js` pada Next.js 16) menangkap semua permintaan ke `/admin/*`.
+   - Sesi divalidasi menggunakan `@supabase/ssr` `createServerClient` dengan akses cookie langsung dari objek `request`.
+   - Pengunjung tanpa sesi aktif yang mengakses rute `/admin` (selain `/admin/login`) dialihkan otomatis ke `/admin/login`.
+   - Admin yang sudah login dan mengakses `/admin/login` diarahkan otomatis ke `/admin` untuk menghindari login ganda.
+
+2. **Guard Sisi Server pada Setiap Server Action yang Mengubah Data**:
+   - Fungsi helper `requireAdmin()` di `app/admin/actions.js` memverifikasi sesi admin aktif (`supabase.auth.getUser()`) sebelum setiap operasi mutasi.
+   - `gantiPassword()` memanfaatkan helper ini sebagai lapisan pertahanan kedua selain proxy, sesuai aturan keamanan AGENTS.md nomor 3 dan 4.
+   - Server Action yang akan dibuat di masa depan (tambah, ubah, hapus produk) wajib melalui `requireAdmin()` yang sama.
 
 
 
